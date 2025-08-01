@@ -2,23 +2,13 @@
 
 The Gemini CLI supports reading prompts from YAML files, allowing you to batch multiple prompts or maintain a collection of frequently used prompts.
 
-## Quick Start
+## Usage
 
 Use the `--prompt-file` (or `-f`) option to specify a YAML file containing prompts:
 
 ```bash
 gemini --prompt-file prompts.yaml
 ```
-
-## Table of Contents
-
-- [YAML File Formats](#yaml-file-formats)
-- [Multiline Prompts](#multiline-prompts)
-- [How It Works](#how-it-works)
-- [Examples](#examples)
-- [Error Handling](#error-handling)
-- [Limitations](#limitations)
-- [Best Practices](#best-practices)
 
 ## YAML File Formats
 
@@ -61,7 +51,7 @@ The CLI fully supports multiline prompts using YAML's multiline string features:
   within double quotes"
 ```
 
-### Literal Block Scalars (`|`)
+### Literal Block Scalars (|)
 
 Preserves exact formatting and newlines:
 
@@ -75,7 +65,7 @@ Preserves exact formatting and newlines:
   and preserve all whitespace.
 ```
 
-### Folded Block Scalars (`>`)
+### Folded Block Scalars (>)
 
 Folds newlines to spaces but preserves paragraph breaks:
 
@@ -142,33 +132,6 @@ gemini --prompt-file my-prompts.yaml
 gemini --prompt-file prompts.yaml --model gemini-1.5-flash
 ```
 
-### Advanced Example
-
-```yaml
-# Programming Fundamentals
-- "Explain the difference between stack and heap memory"
-- "What are the benefits of using TypeScript over JavaScript?"
-
-# Code Generation
-- |
-  Write a function to validate email addresses:
-  
-  Requirements:
-  - Must check for valid email format
-  - Handle edge cases like empty strings
-  - Return boolean result
-  
-  Example:
-  ```javascript
-  isValidEmail("user@example.com") // true
-  isValidEmail("invalid-email")    // false
-  ```
-
-# System Design
-- "Design a simple caching system for a web application"
-- "Explain the trade-offs between different database types"
-```
-
 ## Error Handling
 
 The CLI will exit with an error if:
@@ -176,14 +139,6 @@ The CLI will exit with an error if:
 - The specified file doesn't exist
 - The YAML file is malformed
 - The file contains no valid prompts
-
-### Common Error Messages
-
-```
-Error: Failed to read prompt file 'nonexistent.yaml': ENOENT: no such file or directory
-Error: Failed to read prompt file 'invalid.yaml': Unexpected scalar at node end
-Error: No prompts found in file: empty.yaml
-```
 
 ## Limitations
 
@@ -193,72 +148,17 @@ Error: No prompts found in file: empty.yaml
 
 ## Best Practices
 
-### 1. **Use Descriptive Prompts**
-Make your prompts clear and specific:
+1. **Use descriptive prompt names**: Make your prompts clear and specific
+2. **Group related prompts**: Organize prompts by topic or purpose
+3. **Keep prompts focused**: Each prompt should have a single, clear objective
+4. **Use comments**: Add YAML comments to document your prompt collection
 
 ```yaml
-# Good
-- "Write a Python function that calculates the factorial of a number using recursion"
+# Programming Questions
+- "Explain the difference between stack and heap memory"
+- "What are the benefits of using TypeScript over JavaScript?"
 
-# Avoid
-- "Write a function"
-```
-
-### 2. **Group Related Prompts**
-Organize prompts by topic or purpose:
-
-```yaml
-# Frontend Development
-- "Explain the Virtual DOM concept in React"
-- "What are React hooks and when should you use them?"
-
-# Backend Development
-- "Design a RESTful API for a blog system"
-- "Explain database normalization with examples"
-```
-
-### 3. **Keep Prompts Focused**
-Each prompt should have a single, clear objective:
-
-```yaml
-# Good - Single focus
-- "Explain the concept of closures in JavaScript"
-
-# Avoid - Multiple topics
-- "Explain closures, promises, and async/await in JavaScript"
-```
-
-### 4. **Use Comments**
-Add YAML comments to document your prompt collection:
-
-```yaml
-# JavaScript Fundamentals
-- "Explain the difference between var, let, and const"
-- "What is hoisting and how does it work?"
-
-# Advanced JavaScript
-- "Explain the event loop and how it works"
-- "What are generators and when should you use them?"
-```
-
-### 5. **Leverage Multiline for Complex Prompts**
-Use multiline formats for detailed instructions:
-
-```yaml
-- |
-  Create a comprehensive testing strategy for a React component:
-  
-  Requirements:
-  - Unit tests for individual functions
-  - Integration tests for component interactions
-  - Accessibility testing
-  - Performance testing
-  
-  Include examples of test cases and testing tools.
-```
-
-## Related Documentation
-
-- [CLI Commands](./commands.md) - Overview of all CLI options
-- [Configuration](./configuration.md) - CLI configuration options
-- [Authentication](./authentication.md) - Setting up authentication 
+# Code Generation
+- "Write a function to validate email addresses"
+- "Create a simple CRUD API with Express.js"
+``` 
