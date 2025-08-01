@@ -1,0 +1,12 @@
+# Sample prompts file for gemini-cli
+# Each line below will be treated as a separate prompt
+
+Write a simple "Hello, World!" program in Python
+
+Explain what is machine learning in simple terms
+
+Create a function to calculate the factorial of a number
+
+What are the benefits of using TypeScript over JavaScript?
+
+Write a bash script to backup a directory 

@@ -47,6 +47,7 @@ export interface CliArgs {
   debug: boolean | undefined;
   prompt: string | undefined;
   promptInteractive: string | undefined;
+  promptFile: string | undefined;
   allFiles: boolean | undefined;
   all_files: boolean | undefined;
   showMemoryUsage: boolean | undefined;
@@ -90,6 +91,11 @@ export async function parseArguments(): Promise<CliArgs> {
       type: 'string',
       description:
         'Execute the provided prompt and continue in interactive mode',
+    })
+    .option('prompt-file', {
+      alias: 'f',
+      type: 'string',
+      description: 'Read prompts from a YAML file. Each line in the file will be treated as a separate prompt.',
     })
     .option('sandbox', {
       alias: 's',
@@ -221,6 +227,16 @@ export async function parseArguments(): Promise<CliArgs> {
       if (argv.prompt && argv.promptInteractive) {
         throw new Error(
           'Cannot use both --prompt (-p) and --prompt-interactive (-i) together',
+        );
+      }
+      if (argv.prompt && argv.promptFile) {
+        throw new Error(
+          'Cannot use both --prompt (-p) and --prompt-file (-f) together',
+        );
+      }
+      if (argv.promptInteractive && argv.promptFile) {
+        throw new Error(
+          'Cannot use both --prompt-interactive (-i) and --prompt-file (-f) together',
         );
       }
       return true;

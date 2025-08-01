@@ -9,6 +9,7 @@ import { render } from 'ink';
 import { AppWrapper } from './ui/App.js';
 import { loadCliConfig, parseArguments, CliArgs } from './config/config.js';
 import { readStdin } from './utils/readStdin.js';
+import { readPromptsFromFile } from './utils/promptFileReader.js';
 import { basename } from 'node:path';
 import v8 from 'node:v8';
 import os from 'node:os';
@@ -250,6 +251,23 @@ export async function main() {
   }
 
   let input = config.getQuestion();
+  
+  // Handle prompt file if specified
+  if (argv.promptFile) {
+    try {
+      const prompts = readPromptsFromFile(argv.promptFile);
+      if (prompts.length === 0) {
+        console.error(`No prompts found in file: ${argv.promptFile}`);
+        process.exit(1);
+      }
+      // Join all prompts with newlines
+      input = prompts.join('\n\n');
+    } catch (error) {
+      console.error(`Error reading prompt file: ${error instanceof Error ? error.message : String(error)}`);
+      process.exit(1);
+    }
+  }
+  
   const startupWarnings = [
     ...(await getStartupWarnings()),
     ...(await getUserStartupWarnings(workspaceRoot)),

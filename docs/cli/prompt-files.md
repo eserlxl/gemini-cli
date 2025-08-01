@@ -39,74 +39,12 @@ Explain the concept of recursion
 Create a simple REST API endpoint
 ```
 
-## Multiline Prompts
-
-The CLI fully supports multiline prompts using YAML's multiline string features:
-
-### Quoted Multiline Strings
-
-```yaml
-- "This is a multiline prompt
-  that spans multiple lines
-  within double quotes"
-```
-
-### Literal Block Scalars (|)
-
-Preserves exact formatting and newlines:
-
-```yaml
-- |
-  This is a literal block scalar
-  that preserves newlines exactly
-  as they appear in the YAML file.
-  
-  It can have multiple paragraphs
-  and preserve all whitespace.
-```
-
-### Folded Block Scalars (>)
-
-Folds newlines to spaces but preserves paragraph breaks:
-
-```yaml
-- >
-  This is a folded block scalar
-  that folds newlines to spaces
-  but preserves paragraph breaks.
-```
-
-### With Escape Sequences
-
-```yaml
-- "This prompt uses \n explicit line breaks \n within quoted strings"
-```
-
-### Complex Examples
-
-```yaml
-- |
-  Write a Python function that:
-  
-  1. Takes a list of numbers as input
-  2. Returns the sum of all even numbers
-  3. Handles edge cases like empty lists
-  
-  Example usage:
-  ```python
-  result = sum_even_numbers([1, 2, 3, 4, 5])
-  print(result)  # Should output: 6
-  ```
-```
-
 ## How It Works
 
 - Each prompt in the file is treated as a separate input
 - Prompts are joined with double newlines (`\n\n`) to create a single input
 - Empty lines are automatically filtered out
 - The CLI processes all prompts in a single session
-- **Multiline prompts are fully supported** using YAML's multiline string features
-- Newlines within individual prompts are preserved as intended
 
 ## Examples
 
