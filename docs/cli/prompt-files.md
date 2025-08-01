@@ -43,11 +43,15 @@ prompts:
 
 ### 3. Plain Text Format
 
-```yaml
+If YAML parsing fails, the CLI will fall back to treating the file as plain text:
+
+```text
 Write a Python function to calculate fibonacci numbers
 Explain the concept of recursion
 Create a simple REST API endpoint
 ```
+
+**Note:** This format is useful for simple prompt lists, but YAML formats are recommended for better structure and multiline support.
 
 ## Multiline Prompts
 
