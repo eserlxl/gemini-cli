@@ -4,9 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
-import { homedir } from 'node:os';
 import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
 import process from 'node:process';
@@ -47,7 +44,6 @@ export interface CliArgs {
   debug: boolean | undefined;
   prompt: string | undefined;
   promptInteractive: string | undefined;
-  promptFile: string | undefined;
   allFiles: boolean | undefined;
   all_files: boolean | undefined;
   showMemoryUsage: boolean | undefined;
@@ -63,6 +59,7 @@ export interface CliArgs {
   experimentalAcp: boolean | undefined;
   extensions: string[] | undefined;
   listExtensions: boolean | undefined;
+  ideMode?: boolean | undefined;
   ideModeFeature: boolean | undefined;
   proxy: string | undefined;
   includeDirectories: string[] | undefined;
@@ -79,7 +76,7 @@ export async function parseArguments(): Promise<CliArgs> {
       alias: 'm',
       type: 'string',
       description: `Model`,
-      default: process.env.GEMINI_MODEL,
+      default: process.env.GEMINI_MODEL || DEFAULT_GEMINI_MODEL,
     })
     .option('prompt', {
       alias: 'p',
@@ -91,11 +88,6 @@ export async function parseArguments(): Promise<CliArgs> {
       type: 'string',
       description:
         'Execute the provided prompt and continue in interactive mode',
-    })
-    .option('prompt-file', {
-      alias: 'f',
-      type: 'string',
-      description: 'Read prompts from a YAML file. Each line in the file will be treated as a separate prompt.',
     })
     .option('sandbox', {
       alias: 's',
@@ -229,16 +221,6 @@ export async function parseArguments(): Promise<CliArgs> {
           'Cannot use both --prompt (-p) and --prompt-interactive (-i) together',
         );
       }
-      if (argv.prompt && argv.promptFile) {
-        throw new Error(
-          'Cannot use both --prompt (-p) and --prompt-file (-f) together',
-        );
-      }
-      if (argv.promptInteractive && argv.promptFile) {
-        throw new Error(
-          'Cannot use both --prompt-interactive (-i) and --prompt-file (-f) together',
-        );
-      }
       return true;
     });
 
@@ -262,24 +244,16 @@ export async function loadHierarchicalGeminiMemory(
   memoryImportFormat: 'flat' | 'tree' = 'tree',
   fileFilteringOptions?: FileFilteringOptions,
 ): Promise<{ memoryContent: string; fileCount: number }> {
-  // FIX: Use real, canonical paths for a reliable comparison to handle symlinks.
-  const realCwd = fs.realpathSync(path.resolve(currentWorkingDirectory));
-  const realHome = fs.realpathSync(path.resolve(homedir()));
-  const isHomeDirectory = realCwd === realHome;
-
-  // If it is the home directory, pass an empty string to the core memory
-  // function to signal that it should skip the workspace search.
-  const effectiveCwd = isHomeDirectory ? '' : currentWorkingDirectory;
-
   if (debugMode) {
     logger.debug(
       `CLI: Delegating hierarchical memory load to server for CWD: ${currentWorkingDirectory} (memoryImportFormat: ${memoryImportFormat})`,
     );
   }
 
-  // Directly call the server function with the corrected path.
+  // Directly call the server function.
+  // The server function will use its own homedir() for the global path.
   return loadServerHierarchicalMemory(
-    effectiveCwd,
+    currentWorkingDirectory,
     debugMode,
     fileService,
     extensionContextFilePaths,
@@ -302,7 +276,9 @@ export async function loadCliConfig(
     ) ||
     false;
   const memoryImportFormat = settings.memoryImportFormat || 'tree';
-  const ideMode = settings.ideMode ?? false;
+  const ideMode =
+    (argv.ideMode ?? settings.ideMode ?? false) &&
+    process.env.TERM_PROGRAM === 'vscode';
 
   const ideModeFeature =
     (argv.ideModeFeature ?? settings.ideModeFeature ?? false) &&
@@ -457,7 +433,7 @@ export async function loadCliConfig(
     cwd: process.cwd(),
     fileDiscoveryService: fileService,
     bugCommand: settings.bugCommand,
-    model: argv.model || settings.model || DEFAULT_GEMINI_MODEL,
+    model: argv.model!,
     extensionContextFilePaths,
     maxSessionTurns: settings.maxSessionTurns ?? -1,
     experimentalAcp: argv.experimentalAcp || false,
@@ -472,8 +448,6 @@ export async function loadCliConfig(
     // New settings for API request delay and prompt injection
     apiRequestDelay: settings.apiRequestDelay,
     promptInjection: settings.promptInjection,
-    // Loop detection settings
-    loopDetection: settings.loopDetection,
   });
 }
 

@@ -47,7 +47,6 @@ import { ClearcutLogger } from '../telemetry/clearcut-logger/clearcut-logger.js'
 import { shouldAttemptBrowserLaunch } from '../utils/browser.js';
 import { MCPOAuthConfig } from '../mcp/oauth-provider.js';
 import { IdeClient } from '../ide/ide-client.js';
-import type { Content } from '@google/genai';
 
 // Re-export OAuth config type
 export type { MCPOAuthConfig };
@@ -143,13 +142,6 @@ export type FlashFallbackHandler = (
   error?: unknown,
 ) => Promise<boolean | string | null>;
 
-export interface LoopDetectionSettings {
-  enabled?: boolean;
-  mode?: 'halt' | 'delay'; // 'halt' = stop processing, 'delay' = delay and continue
-  delayMs?: number; // Delay in milliseconds when mode is 'delay'
-  warningMessage?: string; // Custom warning message to show when loop is detected
-}
-
 export interface ConfigParameters {
   sessionId: string;
   embeddingModel?: string;
@@ -202,8 +194,6 @@ export interface ConfigParameters {
     prompt?: string; // The prompt to inject into each conversation
     position?: 'prepend' | 'append'; // Where to inject the prompt
   };
-  // Loop detection settings
-  loopDetection?: LoopDetectionSettings;
 }
 
 export class Config {
@@ -270,7 +260,6 @@ export class Config {
     prompt: string;
     position: 'prepend' | 'append';
   };
-  private readonly loopDetection: LoopDetectionSettings;
 
   constructor(params: ConfigParameters) {
     this.sessionId = params.sessionId;
@@ -326,19 +315,13 @@ export class Config {
     this.noBrowser = params.noBrowser ?? false;
     this.summarizeToolOutput = params.summarizeToolOutput;
     this.ideModeFeature = params.ideModeFeature ?? false;
-    this.ideMode = params.ideMode ?? false;
+    this.ideMode = params.ideMode ?? true;
     this.ideClient = params.ideClient;
     this.apiRequestDelay = params.apiRequestDelay ?? 0;
     this.promptInjection = {
       enabled: params.promptInjection?.enabled ?? false,
       prompt: params.promptInjection?.prompt ?? '',
       position: params.promptInjection?.position ?? 'prepend',
-    };
-    this.loopDetection = {
-      enabled: params.loopDetection?.enabled ?? true,
-      mode: params.loopDetection?.mode ?? 'halt',
-      delayMs: params.loopDetection?.delayMs ?? 2000,
-      warningMessage: params.loopDetection?.warningMessage ?? 'A potential loop was detected. This can happen due to repetitive tool calls or other model behavior. The request has been halted.',
     };
 
     if (params.contextFileName) {
@@ -369,30 +352,13 @@ export class Config {
   }
 
   async refreshAuth(authMethod: AuthType) {
-    // Save the current conversation history before creating a new client
-    let existingHistory: Content[] = [];
-    if (this.geminiClient && this.geminiClient.isInitialized()) {
-      existingHistory = this.geminiClient.getHistory();
-    }
-
-    // Create new content generator config
-    const newContentGeneratorConfig = createContentGeneratorConfig(
+    this.contentGeneratorConfig = createContentGeneratorConfig(
       this,
       authMethod,
     );
 
-    // Create and initialize new client in local variable first
-    const newGeminiClient = new GeminiClient(this);
-    await newGeminiClient.initialize(newContentGeneratorConfig);
-
-    // Only assign to instance properties after successful initialization
-    this.contentGeneratorConfig = newContentGeneratorConfig;
-    this.geminiClient = newGeminiClient;
-
-    // Restore the conversation history to the new client
-    if (existingHistory.length > 0) {
-      this.geminiClient.setHistory(existingHistory);
-    }
+    this.geminiClient = new GeminiClient(this);
+    await this.geminiClient.initialize(this.contentGeneratorConfig);
 
     // Reset the session flag since we're explicitly changing auth and using default model
     this.inFallbackMode = false;
@@ -752,10 +718,6 @@ export class Config {
     position: 'prepend' | 'append';
   } {
     return this.promptInjection;
-  }
-
-  getLoopDetection(): LoopDetectionSettings {
-    return this.loopDetection;
   }
 }
 // Export model constants for use in CLI

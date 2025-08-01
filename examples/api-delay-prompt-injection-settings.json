@@ -1,0 +1,8 @@
+{
+  "apiRequestDelay": 1000,
+  "promptInjection": {
+    "enabled": true,
+    "prompt": "You are a helpful AI assistant. Always be concise and clear in your responses. When providing code examples, include comments to explain the logic.",
+    "position": "prepend"
+  }
+} 
