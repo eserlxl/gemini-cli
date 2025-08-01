@@ -453,6 +453,11 @@ export async function loadCliConfig(
     ideMode,
     ideModeFeature,
     ideClient,
+    // New settings for API request delay and prompt injection
+    apiRequestDelay: settings.apiRequestDelay,
+    promptInjection: settings.promptInjection,
+    // Loop detection settings
+    loopDetection: settings.loopDetection,
   });
 }
 

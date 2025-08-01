@@ -126,6 +126,22 @@ export interface Settings {
   // Environment variables to exclude from project .env files
   excludedProjectEnvVars?: string[];
   dnsResolutionOrder?: DnsResolutionOrder;
+
+  // New settings for API request delay and prompt injection
+  apiRequestDelay?: number; // Delay in milliseconds after each API request
+  promptInjection?: {
+    enabled?: boolean;
+    prompt?: string; // The prompt to inject into each conversation
+    position?: 'prepend' | 'append'; // Where to inject the prompt
+  };
+
+  // Loop detection settings
+  loopDetection?: {
+    enabled?: boolean;
+    mode?: 'halt' | 'delay'; // 'halt' = stop processing, 'delay' = delay and continue
+    delayMs?: number; // Delay in milliseconds when mode is 'delay'
+    warningMessage?: string; // Custom warning message to show when loop is detected
+  };
 }
 
 export interface SettingsError {

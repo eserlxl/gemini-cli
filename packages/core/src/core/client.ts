@@ -424,15 +424,27 @@ export class GeminiClient {
 
     const loopDetected = await this.loopDetector.turnStarted(signal);
     if (loopDetected) {
-      yield { type: GeminiEventType.LoopDetected };
-      return turn;
+      const loopSettings = this.loopDetector.getLoopDetectionSettings();
+      if (loopSettings.mode === 'delay') {
+        yield { type: GeminiEventType.LoopDetected, value: { mode: 'delay', delayMs: loopSettings.delayMs } };
+        // Don't return here, continue processing after delay
+      } else {
+        yield { type: GeminiEventType.LoopDetected, value: { mode: 'halt' } };
+        return turn;
+      }
     }
 
     const resultStream = turn.run(request, signal);
     for await (const event of resultStream) {
       if (this.loopDetector.addAndCheck(event)) {
-        yield { type: GeminiEventType.LoopDetected };
-        return turn;
+        const loopSettings = this.loopDetector.getLoopDetectionSettings();
+        if (loopSettings.mode === 'delay') {
+          yield { type: GeminiEventType.LoopDetected, value: { mode: 'delay', delayMs: loopSettings.delayMs } };
+          // Don't return here, continue processing after delay
+        } else {
+          yield { type: GeminiEventType.LoopDetected, value: { mode: 'halt' } };
+          return turn;
+        }
       }
       yield event;
     }

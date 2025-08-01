@@ -143,6 +143,13 @@ export type FlashFallbackHandler = (
   error?: unknown,
 ) => Promise<boolean | string | null>;
 
+export interface LoopDetectionSettings {
+  enabled?: boolean;
+  mode?: 'halt' | 'delay'; // 'halt' = stop processing, 'delay' = delay and continue
+  delayMs?: number; // Delay in milliseconds when mode is 'delay'
+  warningMessage?: string; // Custom warning message to show when loop is detected
+}
+
 export interface ConfigParameters {
   sessionId: string;
   embeddingModel?: string;
@@ -188,6 +195,15 @@ export interface ConfigParameters {
   ideModeFeature?: boolean;
   ideMode?: boolean;
   ideClient: IdeClient;
+  // New settings for API request delay and prompt injection
+  apiRequestDelay?: number; // Delay in milliseconds after each API request
+  promptInjection?: {
+    enabled?: boolean;
+    prompt?: string; // The prompt to inject into each conversation
+    position?: 'prepend' | 'append'; // Where to inject the prompt
+  };
+  // Loop detection settings
+  loopDetection?: LoopDetectionSettings;
 }
 
 export class Config {
@@ -247,6 +263,14 @@ export class Config {
     | Record<string, SummarizeToolOutputSettings>
     | undefined;
   private readonly experimentalAcp: boolean = false;
+  // New properties for API request delay and prompt injection
+  private readonly apiRequestDelay: number;
+  private readonly promptInjection: {
+    enabled: boolean;
+    prompt: string;
+    position: 'prepend' | 'append';
+  };
+  private readonly loopDetection: LoopDetectionSettings;
 
   constructor(params: ConfigParameters) {
     this.sessionId = params.sessionId;
@@ -304,6 +328,18 @@ export class Config {
     this.ideModeFeature = params.ideModeFeature ?? false;
     this.ideMode = params.ideMode ?? false;
     this.ideClient = params.ideClient;
+    this.apiRequestDelay = params.apiRequestDelay ?? 0;
+    this.promptInjection = {
+      enabled: params.promptInjection?.enabled ?? false,
+      prompt: params.promptInjection?.prompt ?? '',
+      position: params.promptInjection?.position ?? 'prepend',
+    };
+    this.loopDetection = {
+      enabled: params.loopDetection?.enabled ?? true,
+      mode: params.loopDetection?.mode ?? 'halt',
+      delayMs: params.loopDetection?.delayMs ?? 2000,
+      warningMessage: params.loopDetection?.warningMessage ?? 'A potential loop was detected. This can happen due to repetitive tool calls or other model behavior. The request has been halted.',
+    };
 
     if (params.contextFileName) {
       setGeminiMdFilename(params.contextFileName);
@@ -703,6 +739,23 @@ export class Config {
 
     await registry.discoverAllTools();
     return registry;
+  }
+
+  // New getter methods for API request delay and prompt injection
+  getApiRequestDelay(): number {
+    return this.apiRequestDelay;
+  }
+
+  getPromptInjection(): {
+    enabled: boolean;
+    prompt: string;
+    position: 'prepend' | 'append';
+  } {
+    return this.promptInjection;
+  }
+
+  getLoopDetection(): LoopDetectionSettings {
+    return this.loopDetection;
   }
 }
 // Export model constants for use in CLI

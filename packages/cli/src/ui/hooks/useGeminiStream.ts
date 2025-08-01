@@ -141,7 +141,8 @@ export const useGeminiStream = (
     [toolCalls],
   );
 
-  const loopDetectedRef = useRef(false);
+  const loopDetectedRef = useRef<boolean | { mode: 'delay'; delayMs?: number }>(false);
+  const originalQueryRef = useRef<PartListUnion | null>(null);
 
   const onExec = useCallback(async (done: Promise<void>) => {
     setIsResponding(true);
@@ -512,14 +513,24 @@ export const useGeminiStream = (
     [addItem, config],
   );
 
-  const handleLoopDetectedEvent = useCallback(() => {
-    addItem(
-      {
-        type: 'info',
-        text: `A potential loop was detected. This can happen due to repetitive tool calls or other model behavior. The request has been halted.`,
-      },
-      Date.now(),
-    );
+  const handleLoopDetectedEvent = useCallback((loopInfo?: { mode: 'delay'; delayMs?: number }) => {
+    if (loopInfo?.mode === 'delay') {
+      addItem(
+        {
+          type: 'info',
+          text: `A potential loop was detected. This can happen due to repetitive tool calls or other model behavior. Resending prompt after a ${loopInfo.delayMs || 2000}ms delay...`,
+        },
+        Date.now(),
+      );
+    } else {
+      addItem(
+        {
+          type: 'info',
+          text: `A potential loop was detected. This can happen due to repetitive tool calls or other model behavior. The request has been halted.`,
+        },
+        Date.now(),
+      );
+    }
   }, [addItem]);
 
   const processGeminiStreamEvents = useCallback(
@@ -571,6 +582,10 @@ export const useGeminiStream = (
             // handle later because we want to move pending history to history
             // before we add loop detected message to history
             loopDetectedRef.current = true;
+            if (event.value?.mode === 'delay') {
+              // Store delay information for later handling
+              loopDetectedRef.current = { mode: 'delay', delayMs: event.value.delayMs };
+            }
             break;
           default: {
             // enforces exhaustive switch-case
@@ -638,6 +653,8 @@ export const useGeminiStream = (
       if (!options?.isContinuation) {
         startNewPrompt();
         setThought(null); // Reset thought when starting a new prompt
+        // Store the original query for potential retry
+        originalQueryRef.current = query;
       }
 
       setIsResponding(true);
@@ -664,8 +681,27 @@ export const useGeminiStream = (
           setPendingHistoryItem(null);
         }
         if (loopDetectedRef.current) {
+          const loopInfo = typeof loopDetectedRef.current === 'object' ? loopDetectedRef.current : undefined;
           loopDetectedRef.current = false;
-          handleLoopDetectedEvent();
+          handleLoopDetectedEvent(loopInfo);
+          
+          // If in delay mode, wait for the specified delay then resend the original prompt
+          if (loopInfo?.mode === 'delay' && loopInfo.delayMs) {
+            await new Promise(resolve => setTimeout(resolve, loopInfo.delayMs));
+            
+            // Resend the original prompt after the delay
+            if (originalQueryRef.current) {
+              console.log('🔄 Resending original prompt after loop detection delay...');
+              // Create a new prompt with a note about the retry
+              const retryPrompt = [
+                { text: `[Retry after loop detection delay] ` },
+                ...(Array.isArray(originalQueryRef.current) ? originalQueryRef.current : [originalQueryRef.current])
+              ];
+              
+              // Submit the retry prompt
+              await submitQuery(retryPrompt, { isContinuation: true }, prompt_id);
+            }
+          }
         }
       } catch (error: unknown) {
         if (error instanceof UnauthorizedError) {

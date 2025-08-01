@@ -68,8 +68,15 @@ export class LoopDetectionService {
   private llmCheckInterval = DEFAULT_LLM_CHECK_INTERVAL;
   private lastCheckTurn = 0;
 
+  // Loop detection mode tracking
+  private loopDetectionMode: 'halt' | 'delay' = 'halt';
+  private loopDelayMs: number = 2000;
+
   constructor(config: Config) {
     this.config = config;
+    const loopDetectionSettings = config.getLoopDetection();
+    this.loopDetectionMode = loopDetectionSettings.mode ?? 'halt';
+    this.loopDelayMs = loopDetectionSettings.delayMs ?? 2000;
   }
 
   private getToolCallKey(toolCall: { name: string; args: object }): string {
@@ -381,6 +388,16 @@ Please analyze the conversation history to determine the possibility that the co
       }
     }
     return false;
+  }
+
+  /**
+   * Gets the current loop detection mode and delay settings.
+   */
+  getLoopDetectionSettings(): { mode: 'halt' | 'delay'; delayMs: number } {
+    return {
+      mode: this.loopDetectionMode,
+      delayMs: this.loopDelayMs,
+    };
   }
 
   /**

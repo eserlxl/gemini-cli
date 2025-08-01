@@ -143,8 +143,14 @@ export type ServerGeminiFinishedEvent = {
   value: FinishReason;
 };
 
+export interface LoopDetectionInfo {
+  mode: 'halt' | 'delay';
+  delayMs?: number;
+}
+
 export type ServerGeminiLoopDetectedEvent = {
   type: GeminiEventType.LoopDetected;
+  value?: LoopDetectionInfo;
 };
 
 // The original union type, now composed of the individual types
