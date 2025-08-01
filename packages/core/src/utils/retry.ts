@@ -24,6 +24,7 @@ export interface RetryOptions {
     error?: unknown,
   ) => Promise<string | boolean | null>;
   authType?: string;
+  apiRequestDelay?: number; // Delay in milliseconds after each successful API request
 }
 
 const DEFAULT_RETRY_OPTIONS: RetryOptions = {
@@ -81,6 +82,7 @@ export async function retryWithBackoff<T>(
     onPersistent429,
     authType,
     shouldRetry,
+    apiRequestDelay,
   } = {
     ...DEFAULT_RETRY_OPTIONS,
     ...options,
@@ -93,7 +95,11 @@ export async function retryWithBackoff<T>(
   while (attempt < maxAttempts) {
     attempt++;
     try {
-      return await fn();
+      const result = await fn();
+      if (apiRequestDelay !== undefined && apiRequestDelay > 0) {
+        await delay(apiRequestDelay);
+      }
+      return result;
     } catch (error) {
       const errorStatus = getErrorStatus(error);
 

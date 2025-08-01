@@ -297,7 +297,18 @@ export const useGeminiStream = (
             { type: MessageType.USER, text: trimmedQuery },
             userMessageTimestamp,
           );
-          localQueryToSendToGemini = trimmedQuery;
+          
+          // Apply prompt injection if configured
+          const promptInjection = config.getPromptInjection();
+          if (promptInjection.enabled && promptInjection.prompt.trim()) {
+            if (promptInjection.position === 'prepend') {
+              localQueryToSendToGemini = `${promptInjection.prompt}\n\n${trimmedQuery}`;
+            } else {
+              localQueryToSendToGemini = `${trimmedQuery}\n\n${promptInjection.prompt}`;
+            }
+          } else {
+            localQueryToSendToGemini = trimmedQuery;
+          }
         }
       } else {
         // It's a function response (PartListUnion that isn't a string)

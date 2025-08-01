@@ -508,6 +508,7 @@ export class GeminiClient {
         onPersistent429: async (authType?: string, error?: unknown) =>
           await this.handleFlashFallback(authType, error),
         authType: this.config.getContentGeneratorConfig()?.authType,
+        apiRequestDelay: this.config.getApiRequestDelay(),
       });
 
       let text = getResponseText(result);
@@ -611,6 +612,7 @@ export class GeminiClient {
         onPersistent429: async (authType?: string, error?: unknown) =>
           await this.handleFlashFallback(authType, error),
         authType: this.config.getContentGeneratorConfig()?.authType,
+        apiRequestDelay: this.config.getApiRequestDelay(),
       });
       return result;
     } catch (error: unknown) {

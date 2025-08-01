@@ -187,6 +187,13 @@ export interface ConfigParameters {
   ideModeFeature?: boolean;
   ideMode?: boolean;
   ideClient: IdeClient;
+  // New settings for API request delay and prompt injection
+  apiRequestDelay?: number; // Delay in milliseconds after each API request
+  promptInjection?: {
+    enabled?: boolean;
+    prompt?: string; // The prompt to inject into each conversation
+    position?: 'prepend' | 'append'; // Where to inject the prompt
+  };
 }
 
 export class Config {
@@ -246,6 +253,13 @@ export class Config {
     | Record<string, SummarizeToolOutputSettings>
     | undefined;
   private readonly experimentalAcp: boolean = false;
+  // New properties for API request delay and prompt injection
+  private readonly apiRequestDelay: number;
+  private readonly promptInjection: {
+    enabled: boolean;
+    prompt: string;
+    position: 'prepend' | 'append';
+  };
 
   constructor(params: ConfigParameters) {
     this.sessionId = params.sessionId;
@@ -303,6 +317,12 @@ export class Config {
     this.ideModeFeature = params.ideModeFeature ?? false;
     this.ideMode = params.ideMode ?? true;
     this.ideClient = params.ideClient;
+    this.apiRequestDelay = params.apiRequestDelay ?? 0;
+    this.promptInjection = {
+      enabled: params.promptInjection?.enabled ?? false,
+      prompt: params.promptInjection?.prompt ?? '',
+      position: params.promptInjection?.position ?? 'prepend',
+    };
 
     if (params.contextFileName) {
       setGeminiMdFilename(params.contextFileName);
@@ -685,6 +705,19 @@ export class Config {
 
     await registry.discoverAllTools();
     return registry;
+  }
+
+  // New getter methods for API request delay and prompt injection
+  getApiRequestDelay(): number {
+    return this.apiRequestDelay;
+  }
+
+  getPromptInjection(): {
+    enabled: boolean;
+    prompt: string;
+    position: 'prepend' | 'append';
+  } {
+    return this.promptInjection;
   }
 }
 // Export model constants for use in CLI
