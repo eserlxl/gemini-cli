@@ -1,0 +1,55 @@
+# Examples of multiline prompts in YAML
+# All of these formats are supported by gemini-cli
+
+# 1. Simple quoted multiline string
+- "This is a multiline prompt
+  that spans multiple lines
+  within double quotes"
+
+# 2. Literal block scalar (preserves exact formatting)
+- |
+  This is a literal block scalar
+  that preserves newlines exactly
+  as they appear in the YAML file.
+  
+  It can have multiple paragraphs
+  and preserve all whitespace.
+
+# 3. Folded block scalar (folds newlines to spaces)
+- >
+  This is a folded block scalar
+  that folds newlines to spaces
+  but preserves paragraph breaks.
+
+# 4. Multiline with explicit escape sequences
+- "This prompt uses \n explicit line breaks \n within quoted strings"
+
+# 5. Complex multiline with code blocks
+- |
+  Write a Python function that:
+  
+  1. Takes a list of numbers as input
+  2. Returns the sum of all even numbers
+  3. Handles edge cases like empty lists
+  
+  Example usage:
+  ```python
+  result = sum_even_numbers([1, 2, 3, 4, 5])
+  print(result)  # Should output: 6
+  ```
+
+# 6. Multiline with bullet points
+- |
+  Create a comprehensive guide for:
+  
+  - Setting up a development environment
+  - Installing necessary tools
+  - Configuring the project
+  - Running tests and debugging
+
+# 7. Mixed content with formatting
+- >
+  This is a long prompt that explains
+  a complex concept with multiple
+  paragraphs and detailed instructions
+  for the user to follow step by step. 
