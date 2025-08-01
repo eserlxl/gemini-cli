@@ -464,6 +464,8 @@ export async function loadCliConfig(
     // New settings for API request delay and prompt injection
     apiRequestDelay: settings.apiRequestDelay,
     promptInjection: settings.promptInjection,
+    // Loop detection settings
+    loopDetection: settings.loopDetection,
   });
 }
 

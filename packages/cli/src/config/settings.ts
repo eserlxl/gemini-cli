@@ -117,6 +117,14 @@ export interface Settings {
     prompt?: string; // The prompt to inject into each conversation
     position?: 'prepend' | 'append'; // Where to inject the prompt
   };
+
+  // Loop detection settings
+  loopDetection?: {
+    enabled?: boolean;
+    mode?: 'halt' | 'delay'; // 'halt' = stop processing, 'delay' = delay and continue
+    delayMs?: number; // Delay in milliseconds when mode is 'delay'
+    warningMessage?: string; // Custom warning message to show when loop is detected
+  };
 }
 
 export interface SettingsError {

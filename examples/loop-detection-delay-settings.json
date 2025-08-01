@@ -1,0 +1,8 @@
+{
+  "loopDetection": {
+    "enabled": true,
+    "mode": "delay",
+    "delayMs": 2000,
+    "warningMessage": "A potential loop was detected. This can happen due to repetitive tool calls or other model behavior. Continuing after a delay..."
+  }
+} 
