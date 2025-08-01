@@ -43,15 +43,11 @@ prompts:
 
 ### 3. Plain Text Format
 
-If YAML parsing fails, the CLI will fall back to treating the file as plain text:
-
-```text
+```yaml
 Write a Python function to calculate fibonacci numbers
 Explain the concept of recursion
 Create a simple REST API endpoint
 ```
-
-**Note:** This format is useful for simple prompt lists, but YAML formats are recommended for better structure and multiline support.
 
 ## Multiline Prompts
 
@@ -107,9 +103,10 @@ Folds newlines to spaces but preserves paragraph breaks:
   3. Handles edge cases like empty lists
   
   Example usage:
-  
+  ```python
   result = sum_even_numbers([1, 2, 3, 4, 5])
   print(result)  # Should output: 6
+  ```
 ```
 
 ## How It Works
@@ -162,9 +159,10 @@ gemini --prompt-file prompts.yaml --model gemini-1.5-flash
   - Return boolean result
   
   Example:
-  
+  ```javascript
   isValidEmail("user@example.com") // true
   isValidEmail("invalid-email")    // false
+  ```
 
 # System Design
 - "Design a simple caching system for a web application"
